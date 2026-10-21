@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ job.title }} at {{ job.company }}{% endblock %}
+{% block meta_description %}{{ job.title }} at {{ job.company }} – {{ job.location }}. {{ job.description|truncatewords:20 }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- ─── Main Content ──────────────────────────── -->
+    <div class="col-lg-8">
+      <!-- Header -->
+      <div class="glass-card-static p-4 mb-4">
+        <div class="d-flex align-items-start gap-4">
+          {% if job.company_logo %}
+          <img src="{{ job.company_logo.url }}" alt="{{ job.company }}"
+               style="width:72px;height:72px;border-radius:16px;object-fit:contain;background:rgba(255,255,255,0.1);padding:8px;">
+          {% else %}
+          <div class="company-logo-placeholder" style="width:72px;height:72px;border-radius:16px;font-size:1.8rem;">
+            {{ job.company|first|upper }}
+          </div>
+          {% endif %}
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-start justify-content-between">
+              <div>
+                <h1 class="h2 mb-1">{{ job.title }}</h1>
+                <p class="mb-0" style="color:var(--primary-light);font-weight:500;font-size:1.1rem;">
+                  {{ job.company }}
+                </p>
+              </div>
+              {% if job.is_featured %}
+              <span class="featured-badge">⭐ Featured</span>
+              {% endif %}
+            </div>
+
+            <div class="job-meta mt-3">
+              <span class="job-tag"><i class="bi bi-geo-alt me-1"></i>{{ job.location }}</span>
+              <span class="job-tag"><i class="bi bi-clock me-1"></i>{{ job.get_job_type_display }}</span>
+              <span class="job-tag"><i class="bi bi-bar-chart me-1"></i>{{ job.get_experience_level_display }}</span>
+              {% if job.category %}
+              <span class="job-tag"><i class="bi bi-tag me-1"></i>{{ job.category.name }}</span>
+              {% endif %}
+              <span class="job-tag"><i class="bi bi-eye me-1"></i>{{ job.views_count }} views</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Info Row -->
+        <div class="row g-3 mt-3">
+          <div class="col-6 col-md-3 text-center" style="padding:1rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:1.4rem;color:var(--success);font-weight:700;">{{ job.get_salary_display_str }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Salary</div>
+          </div>
+          <div class="col-6 col-md-3 text-center" style="padding:1rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:1.4rem;font-weight:700;color:var(--primary-light);">{{ job.vacancies }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Vacancies</div>
+          </div>
+          <div class="col-6 col-md-3 text-center" style="padding:1rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:1.4rem;font-weight:700;color:{% if job.is_expired %}var(--danger){% else %}var(--warning){% endif %};">
+              {{ job.deadline|date:"d M" }}
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Deadline</div>
+          </div>
+          <div class="col-6 col-md-3 text-center" style="padding:1rem;background:rgba(255,255,255,0.03);border-radius:10px;">
+            <div style="font-size:1.4rem;font-weight:700;color:var(--secondary);">{{ job.application_count }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Applicants</div>
+          </div>
+        </div>
+
+        <!-- Skills Required -->
+        {% if job.skills_required %}
+        <div class="mt-3">
+          <h6 style="color:var(--text-secondary);">Required Skills</h6>
+          <div>
+            {% for skill in job.get_skills_list %}
+            <span class="skill-tag">{{ skill }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Description -->
+      <div class="glass-card-static p-4 mb-4">
+        <h2 class="h5 mb-3"><i class="bi bi-file-text me-2" style="color:var(--primary-light);"></i>Job Description</h2>
+        <div style="color:var(--text-secondary);line-height:1.8;white-space:pre-line;">{{ job.description }}</div>
+      </div>
+
+      <!-- Requirements -->
+      <div class="glass-card-static p-4 mb-4">
+        <h2 class="h5 mb-3"><i class="bi bi-check2-circle me-2" style="color:var(--success);"></i>Requirements</h2>
+        <div style="color:var(--text-secondary);line-height:1.8;white-space:pre-line;">{{ job.requirements }}</div>
+      </div>
+
+      {% if job.responsibilities %}
+      <div class="glass-card-static p-4 mb-4">
+        <h2 class="h5 mb-3"><i class="bi bi-list-task me-2" style="color:var(--warning);"></i>Responsibilities</h2>
+        <div style="color:var(--text-secondary);line-height:1.8;white-space:pre-line;">{{ job.responsibilities }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ─── Sidebar ────────────────────────────────── -->
+    <div class="col-lg-4">
+      <!-- Apply Card -->
+      <div class="glass-card-static p-4 mb-4" style="position:sticky;top:90px;">
+        {% if job.is_open %}
+          {% if user.is_authenticated %}
+            {% if user.is_applicant %}
+              {% if already_applied %}
+              <div class="text-center">
+                <div class="mb-3" style="font-size:2.5rem;">✅</div>
+                <h5 class="text-success">Already Applied!</h5>
+                <p style="color:var(--text-muted);font-size:0.875rem;">You have submitted your application for this job.</p>
+                <a href="{% url 'applications:my_applications' %}" class="btn btn-outline-primary w-100">
+                  <i class="bi bi-list-check me-1"></i>View My Applications
+                </a>
+              </div>
+              {% else %}
+              <h5 class="mb-1">Ready to Apply?</h5>
+              <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:1.5rem;">
+                Don't miss this opportunity. Your application takes less than 2 minutes.
+              </p>
+              <a href="{% url 'applications:apply' job.pk %}" class="btn btn-primary w-100 mb-2 pulse-glow">
+                <i class="bi bi-send me-1"></i>Apply Now
+              </a>
+              {% endif %}
+            {% else %}
+            <p style="color:var(--text-muted);">Only applicants can apply for jobs.</p>
+            {% endif %}
+          {% else %}
+          <h5 class="mb-3">Interested?</h5>
+          <a href="{% url 'accounts:register' %}" class="btn btn-primary w-100 mb-2">
+            <i class="bi bi-person-plus me-1"></i>Sign Up to Apply
+          </a>
+          <a href="{% url 'accounts:login' %}" class="btn btn-secondary-glass w-100">
+            Already have an account? Sign In
+          </a>
+          {% endif %}
+        {% else %}
+        <div class="text-center">
+          <div class="mb-3" style="font-size:2.5rem;">⏰</div>
+          <h5 class="text-warning">
+            {% if job.is_expired %}Application Closed{% else %}Not Accepting Applications{% endif %}
+          </h5>
+          <p style="color:var(--text-muted);font-size:0.875rem;">This job is no longer accepting applications.</p>
+        </div>
+        {% endif %}
+
+        {% if user.is_authenticated and user.is_recruiter and job.recruiter == user %}
+        <hr class="divider">
+        <div class="d-grid gap-2">
+          <a href="{% url 'jobs:edit' job.pk %}" class="btn btn-secondary-glass btn-sm">
+            <i class="bi bi-pencil me-1"></i>Edit Job
+          </a>
+          <a href="{% url 'dashboard:recruiter_pipeline' job.pk %}" class="btn btn-secondary-glass btn-sm">
+            <i class="bi bi-kanban me-1"></i>View Pipeline
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Posted By -->
+      <div class="glass-card-static p-4 mb-4">
+        <h6 style="color:var(--text-secondary);margin-bottom:1rem;">Posted By</h6>
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar-circle">
+            {{ job.recruiter.first_name|first|upper }}{{ job.recruiter.last_name|first|upper }}
+          </div>
+          <div>
+            <div style="font-weight:600;">{{ job.recruiter.get_full_name }}</div>
+            <div style="color:var(--text-muted);font-size:0.8rem;">{{ job.created_at|date:"d M Y" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Similar Jobs -->
+      {% if similar_jobs %}
+      <div class="glass-card-static p-4">
+        <h6 style="color:var(--text-secondary);margin-bottom:1rem;">Similar Jobs</h6>
+        {% for sj in similar_jobs %}
+        <a href="{% url 'jobs:detail' sj.pk %}" class="d-flex gap-3 mb-3 text-decoration-none"
+           style="padding:0.75rem;background:rgba(255,255,255,0.03);border-radius:10px;transition:all 0.2s;">
+          <div class="company-logo-placeholder" style="width:36px;height:36px;border-radius:8px;font-size:0.9rem;flex-shrink:0;">
+            {{ sj.company|first|upper }}
+          </div>
+          <div>
+            <div style="color:var(--text-primary);font-weight:600;font-size:0.875rem;">{{ sj.title }}</div>
+            <div style="color:var(--primary-light);font-size:0.75rem;">{{ sj.company }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

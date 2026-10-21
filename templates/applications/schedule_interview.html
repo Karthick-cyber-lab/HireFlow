@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Schedule Interview{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{% url 'applications:detail' application.pk %}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <h1 class="h4 mb-0">Schedule Interview</h1>
+      </div>
+      <div class="glass-card-static p-4 mb-4">
+        <div class="d-flex align-items-center gap-3 mb-3 pb-3" style="border-bottom:1px solid var(--border-glass);">
+          <div class="avatar-circle">{{ application.applicant.first_name|first|upper }}{{ application.applicant.last_name|first|upper }}</div>
+          <div>
+            <div style="font-weight:600;">{{ application.applicant.get_full_name }}</div>
+            <div style="color:var(--text-muted);font-size:0.875rem;">for {{ application.job.title }}</div>
+          </div>
+        </div>
+        {% crispy form %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage All Jobs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">All Job Listings</h1>
+    <div class="d-flex gap-2">
+      <a href="{% url 'dashboard:export_jobs' %}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-download me-1"></i>Export CSV</a>
+      <a href="{% url 'dashboard:admin_overview' %}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-arrow-left me-1"></i>Back</a>
+    </div>
+  </div>
+
+  <div class="glass-card-static overflow-hidden">
+    <table class="table table-dark-custom mb-0">
+      <thead>
+        <tr>
+          <th>Job</th>
+          <th>Recruiter</th>
+          <th>Category</th>
+          <th>Applications</th>
+          <th>Deadline</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>
+            <div style="font-weight:600;">{{ job.title }}</div>
+            <div style="color:var(--text-muted);font-size:0.75rem;">{{ job.company }} · {{ job.location }}</div>
+          </td>
+          <td style="color:var(--text-secondary);font-size:0.875rem;">{{ job.recruiter.get_full_name }}</td>
+          <td><span class="job-tag">{{ job.category.name|default:"–" }}</span></td>
+          <td style="color:var(--secondary);font-weight:600;">{{ job.app_count }}</td>
+          <td style="color:{% if job.is_expired %}var(--danger){% else %}var(--text-secondary){% endif %};font-size:0.875rem;">
+            {{ job.deadline|date:"d M Y" }}
+          </td>
+          <td>
+            <span class="badge-status {% if job.status == 'active' %}status-selected{% elif job.status == 'closed' %}status-rejected{% else %}status-applied{% endif %}">
+              {{ job.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'jobs:detail' job.pk %}" class="btn btn-secondary-glass btn-sm me-1"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'jobs:edit' job.pk %}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

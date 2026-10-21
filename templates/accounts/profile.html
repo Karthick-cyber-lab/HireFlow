@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ request.user.get_full_name }} – Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="glass-card-static p-4 text-center mb-4">
+        {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar"
+             style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);">
+        {% else %}
+        <div class="avatar-circle avatar-circle-lg mx-auto mb-3">
+          {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+        </div>
+        {% endif %}
+        <h2 class="h4 mt-3 mb-1">{{ request.user.get_full_name }}</h2>
+        <p style="color:var(--primary-light);font-weight:500;margin-bottom:0.25rem;">{{ request.user.email }}</p>
+        <span class="badge-status {% if request.user.is_admin %}status-selected{% elif request.user.is_recruiter %}status-shortlisted{% else %}status-applied{% endif %} d-inline-block mt-1">
+          {{ request.user.get_role_display }}
+        </span>
+        <div class="mt-3">
+          <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary w-100">
+            <i class="bi bi-pencil me-1"></i>Edit Profile
+          </a>
+        </div>
+      </div>
+
+      {% if profile.skills %}
+      <div class="glass-card-static p-4 mb-4">
+        <h6 style="color:var(--text-secondary);margin-bottom:0.75rem;">Skills</h6>
+        {% for skill in profile.get_skills_list %}
+        <span class="skill-tag">{{ skill }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="glass-card-static p-4">
+        <h6 style="color:var(--text-secondary);margin-bottom:0.75rem;">Contact & Links</h6>
+        {% if profile.phone %}
+        <div class="d-flex gap-2 mb-2" style="color:var(--text-secondary);font-size:0.875rem;">
+          <i class="bi bi-telephone" style="color:var(--primary-light);"></i>{{ profile.phone }}
+        </div>
+        {% endif %}
+        {% if profile.location %}
+        <div class="d-flex gap-2 mb-2" style="color:var(--text-secondary);font-size:0.875rem;">
+          <i class="bi bi-geo-alt" style="color:var(--primary-light);"></i>{{ profile.location }}
+        </div>
+        {% endif %}
+        {% if profile.linkedin_url %}
+        <a href="{{ profile.linkedin_url }}" target="_blank" class="d-flex gap-2 mb-2 text-decoration-none" style="color:var(--text-secondary);font-size:0.875rem;">
+          <i class="bi bi-linkedin" style="color:#0a66c2;"></i>LinkedIn
+        </a>
+        {% endif %}
+        {% if profile.github_url %}
+        <a href="{{ profile.github_url }}" target="_blank" class="d-flex gap-2 mb-2 text-decoration-none" style="color:var(--text-secondary);font-size:0.875rem;">
+          <i class="bi bi-github" style="color:var(--text-primary);"></i>GitHub
+        </a>
+        {% endif %}
+        {% if profile.resume %}
+        <a href="{{ profile.resume.url }}" target="_blank" class="d-flex gap-2 mb-2 text-decoration-none" style="color:var(--secondary);font-size:0.875rem;">
+          <i class="bi bi-file-earmark-pdf"></i>Download Resume
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      {% if profile.bio %}
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="mb-3"><i class="bi bi-person-lines-fill me-2" style="color:var(--primary-light);"></i>About Me</h5>
+        <p style="color:var(--text-secondary);line-height:1.8;">{{ profile.bio }}</p>
+      </div>
+      {% endif %}
+
+      {% if profile.experience_years %}
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="mb-3"><i class="bi bi-briefcase me-2" style="color:var(--warning);"></i>Experience</h5>
+        <p style="color:var(--text-secondary);">{{ profile.experience_years }} year{{ profile.experience_years|pluralize }} of professional experience</p>
+      </div>
+      {% endif %}
+
+      {% if request.user.is_applicant %}
+      <div class="glass-card-static p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2" style="color:var(--secondary);"></i>Recent Applications</h5>
+          <a href="{% url 'applications:my_applications' %}" class="btn btn-secondary-glass btn-sm">View All</a>
+        </div>
+        {% with apps=request.user.applications.all|slice:":5" %}
+        {% if apps %}
+        {% for app in apps %}
+        <a href="{% url 'applications:detail' app.pk %}" class="d-flex justify-content-between align-items-center mb-2 p-3 text-decoration-none"
+           style="background:rgba(255,255,255,0.03);border-radius:10px;transition:all 0.2s;">
+          <div>
+            <div style="color:var(--text-primary);font-weight:600;font-size:0.875rem;">{{ app.job.title }}</div>
+            <div style="color:var(--text-muted);font-size:0.75rem;">{{ app.job.company }} · {{ app.applied_at|date:"d M Y" }}</div>
+          </div>
+          <span class="badge-status status-{{ app.status }}">{{ app.get_status_display }}</span>
+        </a>
+        {% endfor %}
+        {% else %}
+        <p style="color:var(--text-muted);">No applications yet. <a href="{% url 'jobs:list' %}" style="color:var(--primary-light);">Browse jobs →</a></p>
+        {% endif %}
+        {% endwith %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

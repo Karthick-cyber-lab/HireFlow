@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Apply – {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Job Header -->
+      <div class="glass-card-static p-4 mb-4">
+        <div class="d-flex align-items-center gap-3">
+          <div class="company-logo-placeholder" style="width:56px;height:56px;border-radius:14px;font-size:1.4rem;">
+            {{ job.company|first|upper }}
+          </div>
+          <div>
+            <h1 class="h4 mb-0">{{ job.title }}</h1>
+            <p class="mb-0" style="color:var(--primary-light);">{{ job.company }} · {{ job.location }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Application Form -->
+      <div class="glass-card-static p-5">
+        <h2 class="h5 mb-1">Submit Your Application</h2>
+        <p style="color:var(--text-muted);margin-bottom:2rem;font-size:0.875rem;">
+          Tell us why you're a great fit. Your profile resume will be attached if you don't upload a new one.
+        </p>
+        {% crispy form %}
+      </div>
+
+      <!-- Tips -->
+      <div class="mt-4 p-4" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:16px;">
+        <h6 style="color:var(--primary-light);"><i class="bi bi-lightbulb me-2"></i>Tips for a Great Cover Letter</h6>
+        <ul style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:0;">
+          <li>Mention specific skills that match the job requirements</li>
+          <li>Share a relevant achievement or project</li>
+          <li>Express genuine enthusiasm for the role and company</li>
+          <li>Keep it concise – 2-3 paragraphs is ideal</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

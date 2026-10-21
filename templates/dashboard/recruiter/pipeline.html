@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Pipeline – {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'dashboard:recruiter_jobs' %}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-arrow-left"></i></a>
+    <div>
+      <h1 class="h4 mb-0">Pipeline – {{ job.title }}</h1>
+      <p class="mb-0" style="color:var(--text-muted);">{{ job.company }} · Drag cards to update status</p>
+    </div>
+    <div class="ms-auto d-flex gap-2">
+      <a href="{% url 'jobs:detail' job.pk %}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-eye me-1"></i>View Job</a>
+      <a href="{% url 'dashboard:export_applications' %}?job={{ job.pk }}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-download me-1"></i>Export</a>
+    </div>
+  </div>
+
+  <div class="row g-3" style="overflow-x:auto;flex-wrap:nowrap;min-width:900px;">
+    {% for status_key, apps in pipeline.items %}
+    <div class="col" style="min-width:220px;">
+      <div class="pipeline-col">
+        <div class="pipeline-header
+          {% if status_key == 'applied' %}status-applied
+          {% elif status_key == 'shortlisted' %}status-shortlisted
+          {% elif status_key == 'interview' %}status-interview
+          {% elif status_key == 'selected' %}status-selected
+          {% else %}status-rejected{% endif %}">
+          <span>{{ status_key|title }}</span>
+          <span>{{ apps|length }}</span>
+        </div>
+
+        {% for app in apps %}
+        <a href="{% url 'applications:detail' app.pk %}" class="pipeline-card text-decoration-none d-block">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="avatar-circle" style="width:28px;height:28px;font-size:0.65rem;">
+              {{ app.applicant.first_name|first|upper }}{{ app.applicant.last_name|first|upper }}
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.8rem;color:var(--text-primary);">{{ app.applicant.get_full_name }}</div>
+              <div style="color:var(--text-muted);font-size:0.7rem;">{{ app.applied_at|date:"d M" }}</div>
+            </div>
+          </div>
+          {% if app.applicant.profile.skills %}
+          <div>
+            {% for skill in app.applicant.profile.get_skills_list|slice:":2" %}
+            <span class="skill-tag" style="font-size:0.65rem;">{{ skill }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="mt-2 d-flex gap-1">
+            <a href="{% url 'applications:update_status' app.pk %}" class="btn btn-secondary-glass" style="font-size:0.65rem;padding:0.15rem 0.4rem;" onclick="event.stopPropagation();">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'applications:schedule_interview' app.pk %}" class="btn btn-secondary-glass" style="font-size:0.65rem;padding:0.15rem 0.4rem;" onclick="event.stopPropagation();">
+              <i class="bi bi-camera-video"></i>
+            </a>
+          </div>
+        </a>
+        {% empty %}
+        <div class="text-center py-3" style="color:var(--text-muted);font-size:0.8rem;">No candidates</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

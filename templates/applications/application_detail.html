@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Application – {{ application.job.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Header -->
+      <div class="glass-card-static p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h1 class="h4 mb-1">{{ application.job.title }}</h1>
+            <p style="color:var(--primary-light);margin-bottom:0.5rem;">{{ application.job.company }} · {{ application.job.location }}</p>
+            <span class="badge-status status-{{ application.status }}">{{ application.get_status_display }}</span>
+          </div>
+          <a href="{% url 'jobs:detail' application.job.pk %}" class="btn btn-secondary-glass btn-sm">
+            <i class="bi bi-eye me-1"></i>View Job
+          </a>
+        </div>
+        <div class="row g-3 mt-3">
+          <div class="col-6 col-md-3 text-center" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">Applied</div>
+            <div style="font-weight:700;color:var(--text-primary);">{{ application.applied_at|date:"d M Y" }}</div>
+          </div>
+          <div class="col-6 col-md-3 text-center" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">Interviews</div>
+            <div style="font-weight:700;color:var(--warning);">{{ interviews.count }}</div>
+          </div>
+          <div class="col-6 col-md-3 text-center" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">Last Updated</div>
+            <div style="font-weight:700;color:var(--text-primary);">{{ application.updated_at|date:"d M" }}</div>
+          </div>
+          <div class="col-6 col-md-3 text-center" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">Status Events</div>
+            <div style="font-weight:700;color:var(--secondary);">{{ history.count }}</div>
+          </div>
+        </div>
+      </div>
+
+      {% if application.cover_letter %}
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="mb-3"><i class="bi bi-envelope me-2" style="color:var(--primary-light);"></i>Cover Letter</h5>
+        <p style="color:var(--text-secondary);line-height:1.8;white-space:pre-line;">{{ application.cover_letter }}</p>
+      </div>
+      {% endif %}
+
+      {% if application.resume %}
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="mb-3"><i class="bi bi-file-earmark-pdf me-2" style="color:var(--danger);"></i>Resume</h5>
+        <a href="{{ application.resume.url }}" target="_blank" class="btn btn-secondary-glass">
+          <i class="bi bi-download me-1"></i>Download Resume
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Interviews -->
+      {% if interviews %}
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="mb-3"><i class="bi bi-camera-video me-2" style="color:var(--warning);"></i>Interviews</h5>
+        {% for interview in interviews %}
+        <div class="mb-3 p-3" style="background:rgba(255,255,255,0.03);border-radius:12px;border-left:3px solid
+          {% if interview.result == 'passed' %}var(--success){% elif interview.result == 'failed' %}var(--danger){% else %}var(--warning){% endif %};">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div style="font-weight:600;color:var(--text-primary);">{{ interview.get_mode_display }}</div>
+              <div style="color:var(--text-muted);font-size:0.875rem;">
+                <i class="bi bi-calendar3 me-1"></i>{{ interview.scheduled_at|date:"d M Y, h:i A" }}
+                <span class="ms-2"><i class="bi bi-clock me-1"></i>{{ interview.duration_minutes }} min</span>
+              </div>
+              {% if interview.interviewer_name %}<div style="color:var(--text-secondary);font-size:0.875rem;margin-top:0.25rem;"><i class="bi bi-person me-1"></i>{{ interview.interviewer_name }}</div>{% endif %}
+              {% if interview.meeting_link %}<a href="{{ interview.meeting_link }}" target="_blank" style="color:var(--primary-light);font-size:0.875rem;"><i class="bi bi-link-45deg me-1"></i>Join Meeting</a>{% endif %}
+            </div>
+            <span class="badge-status {% if interview.result == 'passed' %}status-selected{% elif interview.result == 'failed' %}status-rejected{% else %}status-applied{% endif %}">
+              {{ interview.get_result_display }}
+            </span>
+          </div>
+          {% if interview.notes %}<p style="color:var(--text-muted);font-size:0.875rem;margin-top:0.75rem;margin-bottom:0;">{{ interview.notes }}</p>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Status History Timeline -->
+      <div class="glass-card-static p-4">
+        <h5 class="mb-3"><i class="bi bi-clock-history me-2" style="color:var(--secondary);"></i>Status History</h5>
+        <div class="timeline">
+          {% for event in history %}
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:0.75rem 1rem;">
+              <div class="d-flex justify-content-between">
+                <span style="font-weight:600;color:var(--text-primary);">
+                  {% if event.from_status %}
+                  <span class="badge-status status-{{ event.from_status }}" style="font-size:0.7rem;">{{ event.from_status }}</span>
+                  <i class="bi bi-arrow-right mx-1"></i>
+                  {% endif %}
+                  <span class="badge-status status-{{ event.to_status }}" style="font-size:0.7rem;">{{ event.to_status }}</span>
+                </span>
+                <span style="color:var(--text-muted);font-size:0.75rem;">{{ event.changed_at|date:"d M Y, h:i A" }}</span>
+              </div>
+              {% if event.note %}<p style="color:var(--text-muted);font-size:0.875rem;margin-top:0.25rem;margin-bottom:0;">{{ event.note }}</p>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Recruiter Actions -->
+      {% if request.user.is_recruiter or request.user.is_admin %}
+      <div class="glass-card-static p-4 mb-4">
+        <h6 style="color:var(--text-secondary);margin-bottom:1rem;">Recruiter Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="{% url 'applications:update_status' application.pk %}" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i>Update Status
+          </a>
+          <a href="{% url 'applications:schedule_interview' application.pk %}" class="btn btn-secondary-glass">
+            <i class="bi bi-camera-video me-1"></i>Schedule Interview
+          </a>
+          <a href="{% url 'accounts:applicant_profile' application.applicant.pk %}" class="btn btn-secondary-glass">
+            <i class="bi bi-person me-1"></i>View Applicant Profile
+          </a>
+        </div>
+        {% if application.recruiter_notes %}
+        <div class="mt-3 p-3" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;">
+          <div style="font-size:0.75rem;color:var(--warning);margin-bottom:0.25rem;">RECRUITER NOTES</div>
+          <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:0;">{{ application.recruiter_notes }}</p>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Applicant Quick Actions -->
+      {% if application.applicant == request.user and application.can_withdraw %}
+      <div class="glass-card-static p-4 mb-4">
+        <a href="{% url 'applications:withdraw' application.pk %}" class="btn btn-outline-danger w-100">
+          <i class="bi bi-x-circle me-1"></i>Withdraw Application
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Applicant Info (for recruiters) -->
+      {% if request.user.is_recruiter or request.user.is_admin %}
+      <div class="glass-card-static p-4">
+        <h6 style="color:var(--text-secondary);margin-bottom:1rem;">Applicant</h6>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="avatar-circle">{{ application.applicant.first_name|first|upper }}{{ application.applicant.last_name|first|upper }}</div>
+          <div>
+            <div style="font-weight:600;">{{ application.applicant.get_full_name }}</div>
+            <div style="color:var(--text-muted);font-size:0.875rem;">{{ application.applicant.email }}</div>
+          </div>
+        </div>
+        {% with profile=application.applicant.profile %}
+        {% if profile.skills %}
+        <div>{% for skill in profile.get_skills_list|slice:":6" %}<span class="skill-tag">{{ skill }}</span>{% endfor %}</div>
+        {% endif %}
+        {% if profile.experience_years %}
+        <div class="mt-2" style="color:var(--text-secondary);font-size:0.875rem;"><i class="bi bi-briefcase me-1"></i>{{ profile.experience_years }} years experience</div>
+        {% endif %}
+        {% endwith %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

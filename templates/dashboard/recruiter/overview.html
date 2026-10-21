@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Recruiter Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row g-4">
+
+    <!-- ─── Sidebar ──────────── -->
+    <div class="col-lg-2 d-none d-lg-block">
+      <div class="sidebar rounded-3">
+        <div class="px-3 mb-3">
+          <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Recruiter</div>
+        </div>
+        <a href="{% url 'dashboard:recruiter_overview' %}" class="sidebar-link active"><i class="bi bi-grid-3x3-gap"></i>Overview</a>
+        <a href="{% url 'dashboard:recruiter_jobs' %}" class="sidebar-link"><i class="bi bi-briefcase"></i>My Jobs</a>
+        <a href="{% url 'dashboard:recruiter_applicants' %}" class="sidebar-link"><i class="bi bi-people"></i>Applicants</a>
+        <a href="{% url 'jobs:create' %}" class="sidebar-link"><i class="bi bi-plus-circle"></i>Post Job</a>
+        <hr class="divider mx-3">
+        <a href="{% url 'dashboard:export_applications' %}" class="sidebar-link"><i class="bi bi-download"></i>Export CSV</a>
+      </div>
+    </div>
+
+    <!-- ─── Main Content ──────── -->
+    <div class="col-lg-10">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-1">Welcome back, {{ request.user.first_name }}! 👋</h1>
+          <p style="color:var(--text-muted);">Here's your recruitment overview</p>
+        </div>
+        <a href="{% url 'jobs:create' %}" class="btn btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>Post New Job
+        </a>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="stat-number text-gradient">{{ my_jobs.count }}</div>
+                <div class="stat-label">Total Jobs</div>
+              </div>
+              <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:var(--primary-light);"><i class="bi bi-briefcase"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="stat-number" style="color:var(--success);">{{ active_jobs }}</div>
+                <div class="stat-label">Active Jobs</div>
+              </div>
+              <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:var(--success);"><i class="bi bi-check-circle"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="stat-number" style="color:var(--secondary);">{{ total_applications }}</div>
+                <div class="stat-label">Total Applications</div>
+              </div>
+              <div class="stat-icon" style="background:rgba(6,182,212,0.15);color:var(--secondary);"><i class="bi bi-file-earmark-text"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="stat-number" style="color:var(--warning);">{{ upcoming_interviews.count }}</div>
+                <div class="stat-label">Upcoming Interviews</div>
+              </div>
+              <div class="stat-icon" style="background:rgba(245,158,11,0.15);color:var(--warning);"><i class="bi bi-camera-video"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Pipeline Chart -->
+        <div class="col-md-4">
+          <div class="glass-card-static p-4 h-100">
+            <h5 class="mb-3">Application Pipeline</h5>
+            <canvas id="pipeline-chart" height="200"
+              data-values="{{ pipeline|safe }}"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Applications -->
+        <div class="col-md-8">
+          <div class="glass-card-static p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Recent Applications</h5>
+              <a href="{% url 'dashboard:recruiter_applicants' %}" class="btn btn-secondary-glass btn-sm">View All</a>
+            </div>
+            {% for app in recent_applications %}
+            <div class="d-flex justify-content-between align-items-center mb-2 p-2"
+                 style="background:rgba(255,255,255,0.03);border-radius:8px;">
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-circle" style="width:32px;height:32px;font-size:0.7rem;">
+                  {{ app.applicant.first_name|first|upper }}{{ app.applicant.last_name|first|upper }}
+                </div>
+                <div>
+                  <div style="font-weight:600;font-size:0.875rem;">{{ app.applicant.get_full_name }}</div>
+                  <div style="color:var(--text-muted);font-size:0.75rem;">{{ app.job.title }} · {{ app.applied_at|date:"d M" }}</div>
+                </div>
+              </div>
+              <a href="{% url 'applications:detail' app.pk %}" class="badge-status status-{{ app.status }} text-decoration-none">
+                {{ app.get_status_display }}
+              </a>
+            </div>
+            {% empty %}
+            <p style="color:var(--text-muted);">No applications yet.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Interviews -->
+      {% if upcoming_interviews %}
+      <div class="glass-card-static p-4 mt-4">
+        <h5 class="mb-3"><i class="bi bi-calendar-event me-2" style="color:var(--warning);"></i>Upcoming Interviews</h5>
+        <div class="row g-3">
+          {% for interview in upcoming_interviews %}
+          <div class="col-md-4">
+            <div class="p-3" style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:12px;">
+              <div style="font-weight:600;">{{ interview.application.applicant.get_full_name }}</div>
+              <div style="color:var(--text-muted);font-size:0.875rem;">{{ interview.application.job.title }}</div>
+              <div class="mt-2" style="color:var(--warning);font-size:0.875rem;">
+                <i class="bi bi-clock me-1"></i>{{ interview.scheduled_at|date:"d M, h:i A" }}
+              </div>
+              <span class="job-tag mt-1 d-inline-block">{{ interview.get_mode_display }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- My Jobs Table -->
+      <div class="glass-card-static mt-4 overflow-hidden">
+        <div class="d-flex justify-content-between align-items-center p-4">
+          <h5 class="mb-0">My Job Listings</h5>
+          <a href="{% url 'dashboard:recruiter_jobs' %}" class="btn btn-secondary-glass btn-sm">View All</a>
+        </div>
+        <table class="table table-dark-custom mb-0">
+          <thead>
+            <tr>
+              <th>Job Title</th>
+              <th>Type</th>
+              <th>Applications</th>
+              <th>Deadline</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in my_jobs|slice:":6" %}
+            <tr>
+              <td>
+                <div style="font-weight:600;">{{ job.title }}</div>
+                <div style="color:var(--text-muted);font-size:0.75rem;">{{ job.company }}</div>
+              </td>
+              <td><span class="job-tag">{{ job.get_job_type_display }}</span></td>
+              <td style="color:var(--secondary);font-weight:600;">{{ job.app_count }}</td>
+              <td style="color:{% if job.is_expired %}var(--danger){% else %}var(--text-secondary){% endif %};font-size:0.875rem;">
+                {{ job.deadline|date:"d M Y" }}
+              </td>
+              <td>
+                <span class="badge-status {% if job.status == 'active' %}status-selected{% elif job.status == 'closed' %}status-rejected{% else %}status-applied{% endif %}">
+                  {{ job.get_status_display }}
+                </span>
+              </td>
+              <td>
+                <a href="{% url 'dashboard:recruiter_pipeline' job.pk %}" class="btn btn-secondary-glass btn-sm me-1"><i class="bi bi-kanban"></i></a>
+                <a href="{% url 'jobs:edit' job.pk %}" class="btn btn-secondary-glass btn-sm"><i class="bi bi-pencil"></i></a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Convert Django template dict to JS object for chart
+const pipelineCanvas = document.getElementById('pipeline-chart');
+if (pipelineCanvas) {
+  pipelineCanvas.dataset.values = JSON.stringify({
+    {% for status, count in pipeline.items %}"{{ status }}": {{ count }}{% if not forloop.last %},{% endif %}{% endfor %}
+  });
+}
+</script>
+{% endblock %}
+{% endblock %}
