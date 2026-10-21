@@ -4,9 +4,9 @@
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-### 🏢 Module 1: Recruiter Dashboard
+###  Module 1: Recruiter Dashboard
 - **Job Vacancy Management**: Create, edit, pause, and close job postings with detailed requirements, salary ranges, location types (Remote/Hybrid/Onsite), and deadlines.
 - **Candidate Pipeline**: Visual Kanban and tabular views tracking applicants through four clear stages:
   $$\text{Applied} \longrightarrow \text{Shortlisted} \longrightarrow \text{Interview Scheduled} \longrightarrow \text{Selected / Rejected}$$
@@ -14,7 +14,7 @@
 - **Candidate Profiles**: View applicant portfolios, contact links, experience details, and download resumes.
 - **CSV Data Export**: One-click candidate data export for external spreadsheet workflows.
 
-### 👤 Module 2: Applicant Portal
+###  Module 2: Applicant Portal
 - **Authentication & User Profiles**: Sign up as an applicant, upload resumes, add skills tags, and customize social/portfolio links.
 - **Job Discovery & Search**: Multi-filter search by keywords, job categories, employment types, experience levels, and salary.
 - **One-Click Application**: Apply using an existing uploaded profile resume or upload a tailored resume per application.
@@ -22,19 +22,19 @@
 - **Application Status Tracker**: Real-time status tracker and audit trail showing every milestone in the recruitment process.
 - **Application Withdrawal**: Safe withdrawal option for candidates prior to final decision stages.
 
-### 📊 Module 3: Admin Analytics & User Management
+###  Module 3: Admin Analytics & User Management
 - **Platform Analytics**: Interactive **Chart.js** visualizations showing application status distribution and top hiring categories.
 - **User Management**: View, filter by role (Admin, Recruiter, Applicant), search, and toggle user active/deactive status.
 - **Django Admin Integration**: Full administrative control with inline interview history and custom admin actions.
 
-### ⚡ Module 4: RESTful API (Django REST Framework)
+###  Module 4: RESTful API (Django REST Framework)
 - Complete REST endpoints for Jobs, Job Categories, Applications, Interviews, and Dashboard Stats.
 - Search filters, status filters, and pagination out-of-the-box.
 - Role-based API permissions ensuring secure recruiter and applicant isolation.
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 - **Backend**: Python 3.10+, Django 5.x, Django REST Framework (DRF)
 - **Database**: SQLite (Development) / PostgreSQL-ready (Production)
@@ -44,7 +44,7 @@
 
 ---
 
-## 🚀 Quickstart Guide
+##  Quickstart Guide
 
 ### 1. Clone & Setup Virtual Environment
 ```bash
@@ -83,7 +83,7 @@ Visit **`http://127.0.0.1:8000/`** in your browser.
 
 ---
 
-## 🔐 Demo Accounts
+##  Demo Accounts
 
 All demo accounts are automatically initialized by `python manage.py seed_data`:
 
@@ -98,7 +98,7 @@ All demo accounts are automatically initialized by `python manage.py seed_data`:
 
 ---
 
-## 🧪 Running Automated Tests
+##  Running Automated Tests
 
 Run the full automated test suite covering models, views, duplicate prevention, and API endpoints:
 ```bash
@@ -113,7 +113,7 @@ Test coverage includes:
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
 Base URL: `/api/`
 
@@ -130,7 +130,7 @@ Base URL: `/api/`
 
 ---
 
-## 📂 Project Directory Structure
+##  Project Directory Structure
 
 ```text
 HireFlow/
